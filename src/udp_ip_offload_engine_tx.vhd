@@ -66,7 +66,7 @@ ARCHITECTURE structure OF udp_ip_offload_engine_tx IS
             Data_in_valid : IN STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
             Data_in_start : IN STD_LOGIC;
             Data_in_end : IN STD_LOGIC;
-            --Data_in_err : IN STD_LOGIC;
+            Data_in_err : IN STD_LOGIC;
             Data_out : OUT STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
             Data_out_valid : OUT STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
             Data_out_start : OUT STD_LOGIC;
@@ -84,6 +84,7 @@ ARCHITECTURE structure OF udp_ip_offload_engine_tx IS
 			Data_in : IN STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
 			Data_in_valid : IN STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
 			Data_in_start : IN STD_LOGIC;
+            Data_in_err : IN STD_LOGIC;
 			Data_in_end : IN STD_LOGIC;
 			Data_out : OUT STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
 			Data_out_valid : OUT STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
@@ -108,7 +109,7 @@ BEGIN
             Data_in_valid => Data_app_in_valid,
             Data_in_start => Data_app_in_start,
             Data_in_end => Data_app_in_end,
-            --Data_in_err => Data_app_in_err,
+            Data_in_err => Data_app_in_err,
             Data_out => tx_data,
             Data_out_valid => tx_valid,
             Data_out_start => tx_start,
@@ -126,6 +127,7 @@ BEGIN
             Data_in => tx_data,
             Data_in_valid => tx_valid,
             Data_in_start => tx_start,
+            Data_in_err => tx_err,
             Data_in_end => tx_end,
             Data_out => Data_mac_out,
             Data_out_valid => Data_mac_out_valid,
