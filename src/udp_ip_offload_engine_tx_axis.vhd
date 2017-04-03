@@ -123,7 +123,7 @@ BEGIN
     BEGIN
         IF rising_edge(Clk) THEN
             IF Rstn = '0' THEN
-                S00_axis_app_tready <= '0';
+                S00_axis_app_tready <= '1';
                 data_app_in <= (OTHERS => '0');
                 data_app_in_valid <= (OTHERS => '0');
                 data_app_in_start <= '0';
@@ -134,13 +134,11 @@ BEGIN
                 data_app_in_start <= '0';
                 data_app_in_end <= '0';
                 data_app_in_valid <= (OTHERS => '0');
-                S00_axis_app_tready <= '0';
+                S00_axis_app_tready <= '1';
                 -- TODO: add pushback to the inner core
                 IF S00_axis_app_tvalid = '1' THEN
                     data_app_in <= S00_axis_app_tdata;
                     data_app_in_valid <= S00_axis_app_tkeep;
-                    -- tready acknowledges the data
-                    S00_axis_app_tready <= '1';
                     IF NOT started THEN
                         data_app_in_start <= '1';
                         started := true;
@@ -150,7 +148,6 @@ BEGIN
                         started := false;
                     END IF;
                 END IF;
-                    
             END IF;
         END IF;
     END PROCESS;
