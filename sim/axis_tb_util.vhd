@@ -88,6 +88,13 @@ PACKAGE axis_tb_util IS
         fname : IN STRING
     );
 
+    PROCEDURE axis_record_data_only (
+        SIGNAL clk : STD_LOGIC;
+        SIGNAL axis_data : IN AXIS_BUS_DATA;
+        SIGNAL done : IN BOOLEAN;
+        fname : IN STRING
+    );
+
     PROCEDURE axis_record (
         SIGNAL clk : STD_LOGIC;
         SIGNAL axis_data : IN AXIS_BUS_DATA;
@@ -181,5 +188,34 @@ PACKAGE BODY axis_tb_util IS
                 file_data_line_write(f, fdata);
             END IF;
         END LOOP;
+    END PROCEDURE;
+
+    -- Write valid data bytes only, packets separated by newlines
+    PROCEDURE axis_record_data_only (
+        SIGNAL clk : STD_LOGIC;
+        SIGNAL axis_data : IN AXIS_BUS_DATA;
+        SIGNAL done : IN BOOLEAN;
+        fname : IN STRING
+    ) IS
+        FILE f : TEXT IS OUT fname;
+        VARIABLE l : LINE;
+    BEGIN
+        REPORT "Opened " & fname;
+        WHILE NOT done LOOP
+            WAIT UNTIL rising_edge(clk);
+            IF axis_data.tvalid = '1' THEN
+                FOR i IN 0 TO WIDTH - 1 LOOP
+                    IF axis_data.tkeep(i) = '1' THEN
+                        hwrite(l,
+                            axis_data.tdata((i + 1) * 8 - 1 DOWNTO i * 8),
+                            LEFT, 2);
+                    END IF;
+                END LOOP;
+            END IF;
+            IF axis_data.tlast = '1' THEN
+                writeline(f, l);
+            END IF;
+        END LOOP;
+        writeline(f, l);
     END PROCEDURE;
 END PACKAGE BODY;
