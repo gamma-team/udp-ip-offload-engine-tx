@@ -92,6 +92,7 @@ BEGIN
     BEGIN
         WAIT UNTIL rising_edge(clk);
         slave.outp.tready <= '1';
+        send_clear(master.outp);
         rstn <= '1';
         WAIT UNTIL rising_edge(clk);
         axis_send_file(clk, master.outp, "./tests/tx_integration_test.txt");
