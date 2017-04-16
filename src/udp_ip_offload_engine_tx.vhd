@@ -1,6 +1,6 @@
 -- Top level of the UDP/IP offload engine transmitter with the pure interface.
 --
--- Copyright 2017 Patrick Gauvin
+-- Copyright 2017 Patrick Gauvin. All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
 -- modification, are permitted provided that the following conditions are met:
@@ -42,15 +42,18 @@ ENTITY udp_ip_offload_engine_tx IS
 
         Data_app_in : IN STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
         Data_app_in_valid : IN STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
+        Data_app_in_axi_valid : IN STD_LOGIC;
         Data_app_in_start : IN STD_LOGIC;
         Data_app_in_end : IN STD_LOGIC;
         Data_app_in_err : IN STD_LOGIC;
+        Data_app_in_ready : OUT STD_LOGIC;
 
         Data_mac_out : OUT STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
         Data_mac_out_valid : OUT STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
         Data_mac_out_start : OUT STD_LOGIC;
         Data_mac_out_end : OUT STD_LOGIC;
-        Data_mac_out_err : OUT STD_LOGIC
+        Data_mac_out_err : OUT STD_LOGIC;
+        Data_mac_out_ready : IN STD_LOGIC
     );
 END ENTITY;
 
@@ -64,39 +67,44 @@ ARCHITECTURE structure OF udp_ip_offload_engine_tx IS
             Rst : IN STD_LOGIC;
             Data_in : IN STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
             Data_in_valid : IN STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
+            Data_in_axi_valid : IN STD_LOGIC;
             Data_in_start : IN STD_LOGIC;
             Data_in_end : IN STD_LOGIC;
             Data_in_err : IN STD_LOGIC;
+            Data_in_ready : OUT STD_LOGIC;
             Data_out : OUT STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
             Data_out_valid : OUT STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
             Data_out_start : OUT STD_LOGIC;
             Data_out_end : OUT STD_LOGIC;
-            Data_out_err : OUT STD_LOGIC
+            Data_out_err : OUT STD_LOGIC;
+            Data_out_ready : IN STD_LOGIC
         );
     END COMPONENT;
-	COMPONENT ip_tx IS
-		GENERIC (
-			width : POSITIVE := 8
-		);
-		PORT (
-			Clk : IN STD_LOGIC;
-			Rst : IN STD_LOGIC;
-			Data_in : IN STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
-			Data_in_valid : IN STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
-			Data_in_start : IN STD_LOGIC;
+    COMPONENT ip_tx IS
+        GENERIC (
+            width : POSITIVE := 8
+        );
+        PORT (
+            Clk : IN STD_LOGIC;
+            Rst : IN STD_LOGIC;
+            Data_in : IN STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
+            Data_in_valid : IN STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
+            Data_in_start : IN STD_LOGIC;
             Data_in_err : IN STD_LOGIC;
-			Data_in_end : IN STD_LOGIC;
-			Data_out : OUT STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
-			Data_out_valid : OUT STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
-			Data_out_start : OUT STD_LOGIC;
-			Data_out_end : OUT STD_LOGIC;
-			Data_out_err : OUT STD_LOGIC
-		);
-	END COMPONENT;
+            Data_in_end : IN STD_LOGIC;
+            Data_in_ready : OUT STD_LOGIC;
+            Data_out : OUT STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
+            Data_out_valid : OUT STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
+            Data_out_start : OUT STD_LOGIC;
+            Data_out_end : OUT STD_LOGIC;
+            Data_out_err : OUT STD_LOGIC;
+            Data_out_ready : IN STD_LOGIC
+        );
+    END COMPONENT;
 
     SIGNAL tx_data : STD_LOGIC_VECTOR(width * 8 - 1 DOWNTO 0);
     SIGNAL tx_valid : STD_LOGIC_VECTOR(width - 1 DOWNTO 0);
-    SIGNAL tx_start, tx_end, tx_err : STD_LOGIC;
+    SIGNAL tx_start, tx_end, tx_err, tx_ready : STD_LOGIC;
 BEGIN
     c_udp_tx: udp_tx
         GENERIC MAP (
@@ -107,14 +115,17 @@ BEGIN
             Rst => Rst,
             Data_in => Data_app_in,
             Data_in_valid => Data_app_in_valid,
+            Data_in_axi_valid => Data_app_in_axi_valid,
             Data_in_start => Data_app_in_start,
             Data_in_end => Data_app_in_end,
             Data_in_err => Data_app_in_err,
+            Data_in_ready => Data_app_in_ready,
             Data_out => tx_data,
             Data_out_valid => tx_valid,
             Data_out_start => tx_start,
             Data_out_end => tx_end,
-            Data_out_err => tx_err
+            Data_out_err => tx_err,
+            Data_out_ready => tx_ready
         );
 
     c_ip_tx: ip_tx
@@ -129,10 +140,12 @@ BEGIN
             Data_in_start => tx_start,
             Data_in_err => tx_err,
             Data_in_end => tx_end,
+            Data_in_ready => tx_ready,
             Data_out => Data_mac_out,
             Data_out_valid => Data_mac_out_valid,
             Data_out_start => Data_mac_out_start,
             Data_out_end => Data_mac_out_end,
-            Data_out_err => Data_mac_out_err
+            Data_out_err => Data_mac_out_err,
+            Data_out_ready => Data_mac_out_ready
         );
 END ARCHITECTURE;
