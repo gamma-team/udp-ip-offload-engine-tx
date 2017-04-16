@@ -1,6 +1,6 @@
 -- Testbenching utilities for AXI4-Stream
 --
--- Copyright 2017 Patrick Gauvin
+-- Copyright 2017 Patrick Gauvin. All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
 -- modification, are permitted provided that the following conditions are met:
@@ -120,7 +120,13 @@ PACKAGE BODY axis_tb_util IS
     ) IS
     BEGIN
         axis_data.tdata <= data.data;
-        axis_data.tvalid <= '1';
+        -- don't perform transactions of all null bytes, even though it is
+        -- supported
+        IF data.valid /= x"00" OR data.last = '1' THEN
+            axis_data.tvalid <= '1';
+        ELSE
+            axis_data.tvalid <= '0';
+        END IF;
         axis_data.tkeep <= data.valid;
         axis_data.tlast <= data.last;
     END PROCEDURE;
@@ -136,7 +142,7 @@ PACKAGE BODY axis_tb_util IS
         VARIABLE good : BOOLEAN;
         VARIABLE raw : STD_LOGIC_VECTOR(FILE_DATA_LINE_RANGE);
     BEGIN
-        REPORT "Opened " & fname;
+        REPORT "Opened for reading: " & fname;
         WHILE NOT endfile(f) LOOP
             readline(f, l);
             hread(l, raw, good);

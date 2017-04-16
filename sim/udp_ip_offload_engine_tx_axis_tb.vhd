@@ -1,4 +1,4 @@
--- Copyright 2017 Patrick Gauvin
+-- Copyright 2017 Patrick Gauvin. All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
 -- modification, are permitted provided that the following conditions are met:
@@ -95,16 +95,19 @@ BEGIN
         send_clear(master.outp);
         rstn <= '1';
         WAIT UNTIL rising_edge(clk);
-        axis_send_file(clk, master.outp, "./tests/tx_integration_test.txt");
+        slave.outp.tready <= '1';
+        WAIT UNTIL rising_edge(clk);
+        axis_send_file(clk, master.outp, "tx_integration_test.txt");
         WAIT UNTIL rising_edge(clk) AND test_done;
-        axis_send_file(clk, master.outp, "./tests/tx_throughput_test.txt");
+        axis_send_file(clk, master.outp, "tx_throughput_test.txt");
         WAIT;
     END PROCESS;
 
     p_check_done: PROCESS
     BEGIN
         WAIT UNTIL rising_edge(clk) AND rstn = '1';
-        -- 3 packets in tx_integration_test.txt
+        -- 4 packets in tx_integration_test.txt
+        WAIT UNTIL rising_edge(clk) AND slave.inp.tlast = '1';
         WAIT UNTIL rising_edge(clk) AND slave.inp.tlast = '1';
         WAIT UNTIL rising_edge(clk) AND slave.inp.tlast = '1';
         WAIT UNTIL rising_edge(clk) AND slave.inp.tlast = '1';
@@ -122,11 +125,11 @@ BEGIN
     BEGIN
         WAIT UNTIL rstn = '1' AND rising_edge(clk);
         axis_record_data_only(clk, slave.inp, test_done,
-            "./tests/tx_integration_test.out.txt");
+            "tx_integration_test.out.txt");
         REPORT "Finished TX integration test log";
         WAIT UNTIL rising_edge(clk) AND NOT test_done;
         axis_record_data_only(clk, slave.inp, test_done,
-            "./tests/tx_throughput_test.out.txt");
+            "tx_throughput_test.out.txt");
         REPORT "Finished TX throughput test log";
         WAIT;
     END PROCESS;
